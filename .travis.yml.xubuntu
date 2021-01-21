@@ -1,0 +1,33 @@
+sudo: required
+services:
+  - docker
+  
+before_install:
+  # You will check name of test images
+  # check errors
+  - docker build -t ekolmakov/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  # You will check name of test images
+  # - docker run ekolmakov/multi-docker npm test
+  
+  - docker run -e CI=true ekolmakov/react-test npm test
+  
+after_success:
+  # ! private repo by default
+  - docker build -t ekolmakov/multi-client ./client
+  - docker build -t ekolmakov/multi-nginx ./nginx
+  - docker build -t ekolmakov/multi-server ./server
+  - docker build -t ekolmakov/multi-worker ./worker
+  
+  # Take those images and push them to docker hub
+  
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  
+  # i have only two images at docker hub repository
+  - docker push ekolmakov/multi-client
+  - docker push ekolmakov/multi-nginx
+  - docker push ekolmakov/multi-server
+  - docker push ekolmakov/multi-worker
+  
+ 
